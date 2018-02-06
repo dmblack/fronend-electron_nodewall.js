@@ -52,15 +52,16 @@ Load ruleset
 $ sudo nft -f /etc/nftables.testing.nft
 ```
 
+This application currently uses Electron, which will throw errors if you installed node with nvm, when
+launched as sudo. To combat this; symlink your active (stable.. i hope!) node to your path.
+```
+$ sudo ln -s "$(which node)" /usr/local/bin/node
+```
+
 Launch the application:
 Note: See [Privilege Requirements](#privilege-requirements) regarding sudo.
 ```
-$ sudo node index.js
-```
-
-Or, if you're using Node Version Manager
-```
-$ sudo `which node` index.js
+$ sudo `which electron` .
 ```
 
 
