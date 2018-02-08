@@ -1,17 +1,18 @@
 const nfq = require('nfqueue');
 const IPv4 = require('pcap/decode/ipv4');
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow } = require('electron')
+const ipcMain = require('electron').ipcMain
 const path = require('path')
 const url = require('url')
 
-var counter = 0;
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
+let queue = [];
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({width: 800, height: 600})
+  win = new BrowserWindow({ width: 350, height: 200, frame: false })
 
   // and load the index.html of the app.
   win.loadURL(url.format({
@@ -20,8 +21,10 @@ function createWindow () {
     slashes: true
   }))
 
-  // Open the DevTools.
-  win.webContents.openDevTools()
+  win.webContents.openDevTools();
+
+  win.setPosition(9999, 0, false);
+  win.setAlwaysOnTop(true);
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -47,6 +50,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
+
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (win === null) {
@@ -54,25 +58,34 @@ app.on('activate', () => {
   }
 })
 
+ipcMain.on('nfpacket-verdict', function (event, index, verdict) {
+  console.log('Attempting to set verdict');
+  queue[index - 1].setVerdict(nfq[verdict]);
+})
+
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
+nfq.createQueueHandler(1, 65535, function (nfpacket) {
 
-nfq.createQueueHandler(1, 65535, function(nfpacket) {
   console.log("-- packet received --");
-  console.log(JSON.stringify(nfpacket.info, null, 2));
- 
+  // console.log(JSON.stringify(nfpacket.info, null, 2));
+
   // Decode the raw payload using pcap library 
-  var packet = new IPv4().decode(nfpacket.payload, 0);
+  // var packet = new IPv4().decode(nfpacket.payload, 0);
+
   // Protocol numbers, for example: 1 - ICMP, 6 - TCP, 17 - UDP 
-  console.log(
-    "src=" + packet.saddr + ", dst=" + packet.daddr
-    + ", proto=" + packet.protocol
-  );
- 
+  // console.log(
+  //   "src=" + packet.saddr + ", dst=" + packet.daddr
+  //   + ", proto=" + packet.protocol
+  // );
+
+  let index = queue.push(nfpacket)
+  win.webContents.send('nfqueuedPacket', nfpacket, index, nfq.NF_ACCEPT, nfq.NF_REJECT)
+
   // Set packet verdict. Second parameter set the packet mark. 
-  nfpacket.setVerdict((counter++ % 2) ? nfq.NF_DROP : nfq.NF_ACCEPT);
- 
+  // nfpacket.setVerdict(nfq.NF_ACCEPT);
+
   // Or modify packet and set updated payload 
   // nfpacket.setVerdict(nfq.NF_ACCEPT, null, nfpacket.payload); 
 });
