@@ -12,7 +12,7 @@ let queue = [];
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({ width: 350, height: 200, frame: false })
+  win = new BrowserWindow({ width: 800, height: 600, frame: false })
 
   // and load the index.html of the app.
   win.loadURL(url.format({
@@ -23,7 +23,7 @@ function createWindow () {
 
   win.webContents.openDevTools();
 
-  win.setPosition(9999, 0, false);
+  // win.setPosition(9999, 0, false);
   win.setAlwaysOnTop(true);
 
   // Emitted when the window is closed.
@@ -66,13 +66,14 @@ ipcMain.on('nfpacket-verdict', function (event, index, verdict) {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
-nfq.createQueueHandler(1, 65535, function (nfpacket) {
+nfq.createQueueHandler(20, 65535, function (nfpacket) {
+  let direction = 'OUTGOING'
 
   console.log("-- packet received --");
   // console.log(JSON.stringify(nfpacket.info, null, 2));
 
   // Decode the raw payload using pcap library 
-  // var packet = new IPv4().decode(nfpacket.payload, 0);
+  let packet = new IPv4().decode(nfpacket.payload, 0);
 
   // Protocol numbers, for example: 1 - ICMP, 6 - TCP, 17 - UDP 
   // console.log(
@@ -80,8 +81,9 @@ nfq.createQueueHandler(1, 65535, function (nfpacket) {
   //   + ", proto=" + packet.protocol
   // );
 
-  let index = queue.push(nfpacket)
-  win.webContents.send('nfqueuedPacket', nfpacket, index, nfq.NF_ACCEPT, nfq.NF_REJECT)
+  queue[packet.identification] = nfpacket
+  console.log(packet.identification);
+  win.webContents.send('nfqueuedPacket', { sourceAddress: packet.saddr + ':' + packet.payload.sport, destinationAddress: packet.daddr + ':' + packet.payload.dport}, packet.identification, nfq.NF_ACCEPT, nfq.NF_REJECT, direction)
 
   // Set packet verdict. Second parameter set the packet mark. 
   // nfpacket.setVerdict(nfq.NF_ACCEPT);
@@ -89,3 +91,45 @@ nfq.createQueueHandler(1, 65535, function (nfpacket) {
   // Or modify packet and set updated payload 
   // nfpacket.setVerdict(nfq.NF_ACCEPT, null, nfpacket.payload); 
 });
+
+
+nfq.createQueueHandler(10, 65535, function (nfpacket) {
+  let direction = 'INCOMMING'
+
+  console.log("-- packet received --");
+  // console.log(JSON.stringify(nfpacket.info, null, 2));
+
+  // Decode the raw payload using pcap library 
+  let packet = new IPv4().decode(nfpacket.payload, 0);
+
+  // Protocol numbers, for example: 1 - ICMP, 6 - TCP, 17 - UDP 
+  // console.log(
+  //   "src=" + packet.saddr + ", dst=" + packet.daddr
+  //   + ", proto=" + packet.protocol
+  // );
+  nfpacket.
+
+  queue[packet.identification] = nfpacket
+  console.log(packet.identification);
+  win.webContents.send('nfqueuedPacket', { sourceAddress: packet.saddr + ':' + packet.payload.sport, destinationAddress: packet.daddr + ':' + packet.payload.dport}, packet.identification, nfq.NF_ACCEPT, nfq.NF_REJECT, direction)
+
+  // Set packet verdict. Second parameter set the packet mark. 
+  // nfpacket.setVerdict(nfq.NF_ACCEPT);
+
+  // Or modify packet and set updated payload 
+  // nfpacket.setVerdict(nfq.NF_ACCEPT, null, nfpacket.payload); 
+});
+
+exports.setVerdict = (id, verdict) => {
+  console.log('Verdict Set');
+  queue[id].setVerdict(nfq[verdict]);
+  // queue.splice(id, 1);
+
+  // console.log(queue.length);
+
+  // if (queue[queue.length] !== 0)
+  // {
+  //   let targetPacket = queue[queue.length - 1];
+  //   win.webContents.send('nfqueuedPacket', { sourceAddress: targetPacket.saddr + ':' + targetPacket.payload.sport, destinationAddress: targetPacket.daddr + ':' + targetPacket.payload.dport}, targetPacket.identification, nfq.NF_ACCEPT, nfq.NF_REJECT, direction)
+  // }
+}

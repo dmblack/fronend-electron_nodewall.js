@@ -2,21 +2,28 @@ const ipc = require('electron').ipcRenderer
 const remote = require('electron').remote
 const nfAccept = document.getElementById('nfpacket-accept')
 const nfReject = document.getElementById('nfpacket-reject')
-
+const setVerdict = remote.require('./index.js').setVerdict
 
 nfAccept.addEventListener('click', function () {
-  ipc.send('nfpacket-verdict', 'accept')
+  setVerdict(document.getElementById('nfpacket-id').innerHTML, 1);
+  document.getElementById('nfpacket-queued').innerHTML = '';
+  document.getElementById('nfpacket-id').innerHTML = '';
 })
 
 nfReject.addEventListener('click', function () {
-  ipc.send('nfpacket-verdict', 'reject')
+  setVerdict(document.getElementById('nfpacket-id').innerHTML, 0);
+  document.getElementById('nfpacket-queued').innerHTML = '';
+  document.getElementById('nfpacket-id').innerHTML = '';
 })
 
-ipc.on('nfqueuedPacket', function (event, nfPacket, index, accept, reject) {
-  const packet = `Packet Received: ${JSON.stringify(nfPacket)}`
+ipc.on('nfqueuedPacket', function (event, nfPacket, index, accept, reject, direction) {
+  const packet = `${direction}: ${JSON.stringify(nfPacket)}`
+  const packetId = `${index}`;
   document.getElementById('nfpacket-queued').innerHTML = packet;
-  // ourPacket.setVerdict(accept)
-  ipc.send('nfpacket-verdict', index, accept);
+  document.getElementById('nfpacket-id').innerHTML = packetId;
+  // setVerdict(nfPacket.id, accept)
+  //ourPacket.setVerdict(accept)
+  // ipc.send('nfpacket-verdict', index, accept);
 });
 
 ipc.on('asynchronous-reply', function (event, arg) {
