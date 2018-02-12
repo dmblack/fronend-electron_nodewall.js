@@ -12,7 +12,7 @@ let queue = [];
 
 function createWindow () {
   // Create the browser window.
-  win = new BrowserWindow({ width: 800, height: 600, frame: false })
+  win = new BrowserWindow({ width: 300, height: 200, frame: false })
 
   // and load the index.html of the app.
   win.loadURL(url.format({
@@ -21,9 +21,9 @@ function createWindow () {
     slashes: true
   }))
 
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
 
-  // win.setPosition(9999, 0, false);
+  win.setPosition(9999, 0, false);
   win.setAlwaysOnTop(true);
 
   // Emitted when the window is closed.
@@ -107,7 +107,6 @@ nfq.createQueueHandler(10, 65535, function (nfpacket) {
   //   "src=" + packet.saddr + ", dst=" + packet.daddr
   //   + ", proto=" + packet.protocol
   // );
-  nfpacket.
 
   queue[packet.identification] = nfpacket
   console.log(packet.identification);
@@ -122,7 +121,14 @@ nfq.createQueueHandler(10, 65535, function (nfpacket) {
 
 exports.setVerdict = (id, verdict) => {
   console.log('Verdict Set');
-  queue[id].setVerdict(nfq[verdict]);
+
+  switch (verdict) {
+    case 4:
+      queue[id].setVerdict(verdict, 666)
+    default:
+      queue[id].setVerdict(verdict);
+  }
+  // queue[id].setVerdict(verdict);
   // queue.splice(id, 1);
 
   // console.log(queue.length);

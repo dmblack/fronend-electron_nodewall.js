@@ -11,7 +11,7 @@ nfAccept.addEventListener('click', function () {
 })
 
 nfReject.addEventListener('click', function () {
-  setVerdict(document.getElementById('nfpacket-id').innerHTML, 0);
+  setVerdict(document.getElementById('nfpacket-id').innerHTML, 4);
   document.getElementById('nfpacket-queued').innerHTML = '';
   document.getElementById('nfpacket-id').innerHTML = '';
 })
