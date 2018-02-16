@@ -10,19 +10,16 @@ type actionType = {
   +value: object
 };
 
-
 export default function packet(state: Array<mixed> = [], action: actionType) {
-  let newState;
-  console.log(action);
   switch (action.type) {
     case PACKET_INSERT:
-      newState = state;
-      newState.push(action.value);
-      return newState;
+      state = [...state, action.value];
+      return state;
+      break;
     case PACKET_REMOVE:
-      newState = state;
-      newState.push({"test":"test"});
+      let newState = state.splice(action.value, 1);
       return newState;
+      break;
   default:
       return state;
   }

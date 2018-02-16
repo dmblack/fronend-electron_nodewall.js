@@ -6,7 +6,8 @@ type actionType = {
 };
 
 type actionValue = {
-  +value: object
+  +value: object,
+  +index: number
 }
 
 export const PACKET_INSERT = 'PACKET_INSERT';
@@ -19,9 +20,10 @@ export function insert(value) {
   };
 }
 
-export function remove() {
+export function remove(index) {
   return {
-    type: PACKET_REMOVE
+    type: PACKET_REMOVE,
+    index
   };
 }
 

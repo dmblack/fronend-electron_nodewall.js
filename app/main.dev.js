@@ -100,55 +100,21 @@ ipcMain.on('nfpacket-verdict', function (event, index, verdict) {
 nfq.createQueueHandler(20, 65535, function (nfpacket) {
   mainWindow.show();
   let direction = 'OUTGOING'
-
-  console.log("-- packet received --");
-  // console.log(JSON.stringify(nfpacket.info, null, 2));
-
-  // Decode the raw payload using pcap library 
   let packet = new IPv4().decode(nfpacket.payload, 0);
-
-  // Protocol numbers, for example: 1 - ICMP, 6 - TCP, 17 - UDP 
-  // console.log(
-  //   "src=" + packet.saddr + ", dst=" + packet.daddr
-  //   + ", proto=" + packet.protocol
-  // );
 
   queue[packet.identification] = nfpacket
   console.log(packet.identification);
   mainWindow.webContents.send('nfqueuedPacket', { sourceAddress: packet.saddr + ':' + packet.payload.sport, destinationAddress: packet.daddr + ':' + packet.payload.dport}, packet.identification, nfq.NF_ACCEPT, nfq.NF_REJECT, direction)
-
-  // Set packet verdict. Second parameter set the packet mark. 
-  // nfpacket.setVerdict(nfq.NF_ACCEPT);
-
-  // Or modify packet and set updated payload 
-  // nfpacket.setVerdict(nfq.NF_ACCEPT, null, nfpacket.payload); 
 });
 
 nfq.createQueueHandler(10, 65535, function (nfpacket) {
   mainWindow.show();
   let direction = 'INCOMMING'
-
-  console.log("-- packet received --");
-  // console.log(JSON.stringify(nfpacket.info, null, 2));
-
-  // Decode the raw payload using pcap library 
   let packet = new IPv4().decode(nfpacket.payload, 0);
-
-  // Protocol numbers, for example: 1 - ICMP, 6 - TCP, 17 - UDP 
-  // console.log(
-  //   "src=" + packet.saddr + ", dst=" + packet.daddr
-  //   + ", proto=" + packet.protocol
-  // );
 
   queue[packet.identification] = nfpacket
   console.log(packet.identification);
   mainWindow.webContents.send('nfqueuedPacket', { sourceAddress: packet.saddr + ':' + packet.payload.sport, destinationAddress: packet.daddr + ':' + packet.payload.dport }, packet.identification, nfq.NF_ACCEPT, nfq.NF_REJECT, direction)
-
-  // Set packet verdict. Second parameter set the packet mark. 
-  // nfpacket.setVerdict(nfq.NF_ACCEPT);
-
-  // Or modify packet and set updated payload 
-  // nfpacket.setVerdict(nfq.NF_ACCEPT, null, nfpacket.payload); 
 });
 
 exports.setVerdict = (id, verdict) => {
