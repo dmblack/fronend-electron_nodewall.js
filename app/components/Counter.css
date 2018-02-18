@@ -4,9 +4,9 @@
 
 .packet {
   position: absolute;
-  top: 30%;
-  left: 45%;
-  font-size: 10rem;
+  top: 10%;
+  left: 10%;
+  font-size: 1rem;
   font-weight: bold;
   letter-spacing: -0.025em;
 }

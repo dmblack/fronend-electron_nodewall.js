@@ -44,7 +44,6 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
-
 /**
  * Add event listeners...
  */
