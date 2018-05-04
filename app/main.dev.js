@@ -100,30 +100,33 @@ nfq.createQueueHandler(20, 65535, function (nfpacket) {
   mainWindow.show();
   let direction = 'OUTGOING'
   let packet = new IPv4().decode(nfpacket.payload, 0);
+  console.log(packet);
 
-  queue[packet.identification] = nfpacket
+  queue[`${packet.version}${packet.protocol}${packet.identification}`] = nfpacket
   console.log(packet.identification);
-  mainWindow.webContents.send('nfqueuedPacket', { sourceAddress: packet.saddr + ':' + packet.payload.sport, destinationAddress: packet.daddr + ':' + packet.payload.dport}, packet.identification, nfq.NF_ACCEPT, nfq.NF_REJECT, direction)
+  mainWindow.webContents.send('nfqueuedPacket', packet)
 });
 
 nfq.createQueueHandler(10, 65535, function (nfpacket) {
   mainWindow.show();
   let direction = 'INCOMMING'
   let packet = new IPv4().decode(nfpacket.payload, 0);
+  console.log(packet);
 
-  queue[packet.identification] = nfpacket
+  queue[`${packet.version}${packet.protocol}${packet.identification}`] = nfpacket
   console.log(packet.identification);
-  mainWindow.webContents.send('nfqueuedPacket', { sourceAddress: packet.saddr + ':' + packet.payload.sport, destinationAddress: packet.daddr + ':' + packet.payload.dport }, packet.identification, nfq.NF_ACCEPT, nfq.NF_REJECT, direction)
+  mainWindow.webContents.send('nfqueuedPacket', packet)
 });
 
-exports.setVerdict = (id, verdict) => {
-  console.log('Verdict Set');
+exports.setVerdict = (packet, verdict) => {
+  console.log('Verdict Set: ', verdict);
+  console.log(packet)
   
   switch (verdict) {
     case 4:
-    queue[id].setVerdict(verdict, 666)
+    queue[packet].setVerdict(verdict, 666)
     default:
-    queue[id].setVerdict(verdict);
-    mainWindow.hide();
+    queue[packet].setVerdict(verdict);
+    // mainWindow.hide();
   }
 }

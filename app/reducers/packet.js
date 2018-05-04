@@ -13,7 +13,9 @@ type actionType = {
 export default function packet(state: Array<mixed> = [], action: actionType) {
   switch (action.type) {
     case PACKET_INSERT:
-      state = [...state, action.value];
+      let newPacket = [];
+      newPacket[`${action.value.version}${action.value.protocol}${action.value.identification}`] = action.value
+      state = state.concat(newPacket);
       return state;
       break;
     case PACKET_REMOVE:
